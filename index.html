@@ -681,7 +681,8 @@ function publishAll(topic, obj, retain){
   for (const c of hostClients){ if (c.connected){ try { c.publish(topic, s, {qos:0, retain:!!retain}); } catch(e){} } }
 }
 function publicTeams(){ return teams.map(t => ({id:t.id, name:t.name, size:t.size, cash:t.cash, hold:t.hold, orders:t.orders})); }
-function statePacket(){ return {type:'state', alive:Date.now(), s:serialize(60), teams:publicTeams()}; }
+// Les annonces restent sur l'écran du prof : on ne les envoie pas aux élèves.
+function statePacket(){ const s = serialize(60); s.news = []; s.nextNews = 0; return {type:'state', alive:Date.now(), s, teams:publicTeams()}; }
 let lastCast = 0, castTimer = null;
 function broadcast(now){
   // au plus une fois toutes les 0,8 s, pour ne pas surcharger le relais
@@ -1158,16 +1159,15 @@ function renderTeam(body, tm){
     body.querySelectorAll('[data-sell]').forEach(b => b.onclick = () => trade(b.dataset.sell, -1));
   }
 
-  const n = V.news[0], ban = $('pBanner');
+  const ban = $('pBanner');
   if (st === 'attente'){ ban.className = 'banner wait'; $('pTag').textContent = 'En attente'; $('pTxt').textContent = `Le prof n'a pas encore cliqué sur Commencer. ${MANCHES} manches de ${ROUND/60} minutes. Préparez votre stratégie !`; }
   else if (st === 'fin_manche' || st === 'fini'){
     const r = V.results.find(x => x.manche === V.manche), top = r ? r.top : [];
     ban.className = 'banner wait'; $('pTag').textContent = st === 'fini' ? 'Partie terminée' : `Fin de la manche ${V.manche}`;
     $('pTxt').textContent = (st === 'fini' ? 'Bravo à tous !' : 'Vous gardez votre argent et vos actions pour la manche suivante.');
   }
-  else if (n){ ban.className = 'banner' + (n.pos ? '' : ' neg'); $('pTag').textContent = newsTag(n) + ` · prochaine annonce dans ${mmss(Math.max(0,V.nextNews))}`; $('pTxt').textContent = n.text; }
-  else { ban.className = 'banner'; $('pTag').textContent = `Prochaine annonce dans ${mmss(Math.max(0,V.nextNews))}`; $('pTxt').textContent = 'Le marché est ouvert. Regardez bien les annonces !'; }
-  if (n && newsKey(n) !== plLastNews){ const first = plLastNews === null; plLastNews = newsKey(n); if (!first) document.querySelectorAll('.srow').forEach(r => r.classList.toggle('hot', newsSyms(n).includes(r.dataset.sym))); }
+  else if (st === 'pause'){ ban.className = 'banner wait'; $('pTag').textContent = 'Pause'; $('pTxt').textContent = 'Le prof a mis le marché en pause.'; }
+  else { ban.className = 'banner'; $('pTag').textContent = 'Marché ouvert'; $('pTxt').textContent = 'Regardez le grand écran du prof : les annonces sont seulement là-bas !'; }
 
   const val = teamValue(tm), g = (val/START_CASH-1)*100;
   $('pTeamName').textContent = `${tm.name} · ${teamWho(tm)}`;
