@@ -168,6 +168,7 @@ h1 span{color:var(--news)}
 .srow .act{display:flex;gap:6px;justify-content:flex-end;align-items:center}
 .srow .act input{width:64px}
 .srow .act button{padding:7px 10px}
+.srow .own{font-size:12px;color:var(--muted);margin-top:3px}.srow .own.has{color:var(--news);font-weight:600}
 .bigcode{font-family:var(--f-num);font-size:32px;letter-spacing:.3em;text-align:center}
 
 @media (max-width:1100px){.hostgrid{grid-template-columns:minmax(0,1fr)}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -291,37 +292,182 @@ const DEFS = [
   {sym:'AMZN', name:'Amazon', sector:'Commerce en ligne', price:200, vol:.005},
   {sym:'DIS',  name:'Disney', sector:'Films et parcs', price:110, vol:.004},
 ];
-const PAYS = ['l\'Australie','le Japon','le Brésil','le Canada','l\'Inde','l\'Égypte','la Norvège','le Mexique','la Corée du Sud','le Sénégal',
-  'l\'Allemagne','le Maroc','l\'Argentine','l\'Indonésie','le Nigeria','le Kenya','la France','l\'Italie','l\'Espagne','le Vietnam','les Philippines',
-  'l\'Afrique du Sud','le Chili','le Pérou','la Colombie','la Turquie','l\'Arabie saoudite','les Émirats arabes unis','la Suède','la Pologne',
-  'la Nouvelle-Zélande','la Thaïlande','Singapour','la Côte d\'Ivoire','le Ghana','l\'Irlande','les Pays-Bas','la Suisse','le Québec','la Chine'];
+// [nom, « en … », « de … »] : pour écrire les phrases sans fautes (« au Japon », « du Japon »)
+const PAYS = [
+  ['l\'Australie','en Australie','de l\'Australie'],['le Japon','au Japon','du Japon'],['le Brésil','au Brésil','du Brésil'],
+  ['le Canada','au Canada','du Canada'],['l\'Inde','en Inde','de l\'Inde'],['l\'Égypte','en Égypte','de l\'Égypte'],
+  ['la Norvège','en Norvège','de la Norvège'],['le Mexique','au Mexique','du Mexique'],['la Corée du Sud','en Corée du Sud','de la Corée du Sud'],
+  ['le Sénégal','au Sénégal','du Sénégal'],['l\'Allemagne','en Allemagne','de l\'Allemagne'],['le Maroc','au Maroc','du Maroc'],
+  ['l\'Argentine','en Argentine','de l\'Argentine'],['l\'Indonésie','en Indonésie','de l\'Indonésie'],['le Nigeria','au Nigeria','du Nigeria'],
+  ['le Kenya','au Kenya','du Kenya'],['la France','en France','de la France'],['l\'Italie','en Italie','de l\'Italie'],
+  ['l\'Espagne','en Espagne','de l\'Espagne'],['le Vietnam','au Vietnam','du Vietnam'],['les Philippines','aux Philippines','des Philippines'],
+  ['l\'Afrique du Sud','en Afrique du Sud','de l\'Afrique du Sud'],['le Chili','au Chili','du Chili'],['le Pérou','au Pérou','du Pérou'],
+  ['la Colombie','en Colombie','de la Colombie'],['la Turquie','en Turquie','de la Turquie'],['l\'Arabie saoudite','en Arabie saoudite','de l\'Arabie saoudite'],
+  ['les Émirats arabes unis','aux Émirats arabes unis','des Émirats arabes unis'],['la Suède','en Suède','de la Suède'],['la Pologne','en Pologne','de la Pologne'],
+  ['la Nouvelle-Zélande','en Nouvelle-Zélande','de la Nouvelle-Zélande'],['la Thaïlande','en Thaïlande','de la Thaïlande'],['Singapour','à Singapour','de Singapour'],
+  ['la Côte d\'Ivoire','en Côte d\'Ivoire','de la Côte d\'Ivoire'],['le Ghana','au Ghana','du Ghana'],['l\'Irlande','en Irlande','de l\'Irlande'],
+  ['les Pays-Bas','aux Pays-Bas','des Pays-Bas'],['la Suisse','en Suisse','de la Suisse'],['le Québec','au Québec','du Québec'],
+  ['la Chine','en Chine','de la Chine'],['le Royaume-Uni','au Royaume-Uni','du Royaume-Uni'],['le Portugal','au Portugal','du Portugal'],
+  ['la Grèce','en Grèce','de la Grèce'],['le Cameroun','au Cameroun','du Cameroun'],['la Tunisie','en Tunisie','de la Tunisie'],
+  ['l\'Algérie','en Algérie','de l\'Algérie'],['le Danemark','au Danemark','du Danemark'],['la Finlande','en Finlande','de la Finlande'],
+  ['la Malaisie','en Malaisie','de la Malaisie'],['le Qatar','au Qatar','du Qatar'],['Haïti','en Haïti','d\'Haïti'],['l\'Éthiopie','en Éthiopie','de l\'Éthiopie']];
+// Annonces inspirées de vrais événements de la bourse : résultats trimestriels, contrats, rappels, amendes, grèves, lancements…
+// {en} = « au Japon », {de} = « du Japon », {pays} = « le Japon », {Pays} = « Le Japon »
 const NEWS = {
-  AAPL:{pos:['Apple va ouvrir 25 nouveaux magasins en {p}. Les files d\'attente sont déjà énormes !','Le nouvel iPhone bat un record : 20 millions vendus la première semaine.','Apple signe un contrat pour équiper toutes les écoles de {p} en tablettes.','Apple présente des lunettes intelligentes. Les précommandes explosent !','Les ventes d\'Apple en {p} ont doublé cette année.'],
-        neg:['Une panne mondiale empêche les iPhone de se mettre à jour pendant une journée.','{p} demande à Apple de payer une grosse amende pour ses règles de l\'App Store.','Une pénurie de puces ralentit la fabrication des iPhone.']},
-  TSLA:{pos:['Tesla va construire une usine géante en {p}. Des milliers de voitures en plus !','{p} va interdire les voitures à essence en ville. Les commandes de Tesla grimpent.','Tesla présente une batterie qui se recharge en 5 minutes !','Les taxis autonomes de Tesla arrivent dans 10 villes de {p}.','Tesla livre plus de voitures que prévu ce trimestre.'],
-        neg:['Tesla rappelle 80 000 voitures pour une mise à jour de sécurité.','La nouvelle usine de Tesla en {p} est retardée d\'un an.','Les ventes de Tesla baissent face à la concurrence en {p}.']},
-  BA:  {pos:['Boeing a signé un énorme contrat avec {p} pour 60 nouveaux avions. Ils vont faire beaucoup plus d\'argent !','La compagnie aérienne nationale de {p} commande 40 avions Boeing.','Le nouvel avion de Boeing consomme 25 % moins de carburant. Tout le monde le veut.','Boeing livre ses avions plus vite que prévu.'],
-        neg:['Une grève dans les usines de Boeing arrête la production pendant deux semaines.','Boeing perd une grosse commande de {p} au profit d\'Airbus.','Les autorités demandent plus de tests avant de laisser voler le nouvel avion de Boeing.']},
-  MCD: {pos:['McDonald\'s va ouvrir 300 restaurants en {p} cette année.','Le nouveau menu de McDonald\'s en {p} est un succès incroyable.','McDonald\'s lance la livraison par drone. Les clients adorent !','Les ventes de McDonald\'s montent dans le monde entier ce trimestre.'],
-        neg:['Le prix du bœuf augmente beaucoup. McDonald\'s va gagner moins d\'argent.','McDonald\'s ferme 100 restaurants en {p} à cause de loyers trop chers.']},
-  NKE: {pos:['La plus grande star de soccer de {p} signe un contrat avec Nike !','Les nouvelles chaussures Nike sont en rupture de stock en 3 heures.','Nike devient l\'équipementier officiel de l\'équipe nationale de {p}.','Nike ouvre un magasin géant en {p}.'],
-        neg:['Les ventes de Nike baissent en {p}. Les jeunes préfèrent d\'autres marques.','Un problème dans les usines retarde les nouvelles collections de Nike.']},
-  NTDOY:{pos:['Le nouveau jeu Mario s\'est vendu à 10 millions de copies en un week-end !','Nintendo annonce un film Zelda. Les fans sont en folie.','La console de Nintendo est la plus vendue de l\'année en {p}.','Nintendo va ouvrir un parc d\'attractions en {p}.'],
-        neg:['Le grand jeu de Nintendo est repoussé d\'un an. Les joueurs sont déçus.','Des pirates ont attaqué le service en ligne de Nintendo pendant 2 jours.']},
-  AMZN:{pos:['Amazon va livrer en 1 heure partout en {p}.','Amazon ouvre 10 nouveaux centres de livraison en {p}.','Le Black Friday d\'Amazon bat tous les records de ventes !','Le service cloud d\'Amazon signe un contrat avec le gouvernement de {p}.'],
-        neg:['Une grève des livreurs ralentit Amazon en {p}.','{p} veut obliger Amazon à payer plus de taxes.']},
-  DIS: {pos:['Le nouveau film Disney fait 1 milliard de dollars au cinéma en 2 semaines !','Disney va construire un nouveau parc en {p}.','Disney+ gagne 15 millions d\'abonnés en un mois.','Le parc Disney en {p} bat son record de visiteurs.'],
-        neg:['Le dernier film de Disney est un échec au cinéma.','Une tempête oblige le parc Disney de Floride à fermer pendant une semaine.']},
+  AAPL:{pos:[
+    'Résultats trimestriels : Apple a gagné 30 milliards de dollars en 3 mois, bien plus que prévu par les experts.',
+    'Le nouvel iPhone bat un record : 20 millions vendus dès la première semaine.',
+    'Apple va ouvrir 25 nouveaux magasins {en}. Plus de magasins, c\'est plus de ventes.',
+    'Le gouvernement {de} achète 2 millions d\'iPad pour toutes ses écoles. Une énorme commande pour Apple.',
+    'Apple dévoile des lunettes de réalité augmentée. Les précommandes dépassent toutes les prévisions.',
+    'Les ventes d\'Apple {en} ont doublé cette année.',
+    'La nouvelle Apple Watch peut détecter les problèmes de cœur. Les médecins la recommandent.',
+    'Apple signe avec le plus grand opérateur téléphonique {de} : des millions de clients vont passer à l\'iPhone.',
+    'Apple rachète pour 90 milliards de dollars de ses propres actions. Il y en a moins sur le marché, donc chacune vaut plus.',
+    'Apple ouvre une usine {en} pour fabriquer ses iPhone moins cher. Elle gagnera plus sur chaque téléphone.',
+    'Apple lance un iPhone moins cher pour les étudiants. Il est en rupture de stock partout.',
+    'Apple ajoute un assistant d\'intelligence artificielle dans tous ses appareils. Les clients veulent changer de téléphone.'],
+   neg:[
+    'Une panne bloque des millions d\'iPhone pendant une journée entière. Les clients sont fâchés.',
+    '{Pays} donne à Apple une amende de 2 milliards de dollars pour les règles de l\'App Store.',
+    'Il manque des puces électroniques : Apple ne peut pas fabriquer assez d\'iPhone ce trimestre.',
+    'Le nouvel iPhone chauffe trop. Apple doit en réparer des millions gratuitement.',
+    'Les ventes d\'iPhone baissent {en} : les gens gardent leur vieux téléphone plus longtemps.',
+    'Résultats décevants : Apple a vendu moins d\'iPhone que prévu pendant les fêtes.',
+    'Un concurrent sort un téléphone deux fois moins cher que l\'iPhone. Apple risque de perdre des clients.']},
+  TSLA:{pos:[
+    'Tesla va construire une usine géante {en}. Elle pourra fabriquer 500 000 voitures de plus par an.',
+    '{Pays} va interdire les nouvelles voitures à essence. Les commandes de Tesla explosent.',
+    'Tesla présente une batterie qui se recharge en 5 minutes !',
+    'Les robotaxis de Tesla (des taxis sans chauffeur) arrivent dans 10 villes {de}.',
+    'Record de livraisons : Tesla a livré 500 000 voitures en 3 mois, plus que prévu.',
+    '{Pays} offre 5 000 $ à chaque personne qui achète une voiture électrique. Bonne nouvelle pour Tesla.',
+    'Tesla baisse le prix de sa voiture la moins chère. Les commandes ont triplé en une semaine.',
+    'Tesla vend ses grosses batteries Megapack pour alimenter toute une ville {en}.',
+    'Le robot humanoïde de Tesla commence à travailler dans les usines. Les investisseurs sont impressionnés.',
+    'Le camion électrique de Tesla reçoit une commande de 2 000 camions {de}.'],
+   neg:[
+    'Tesla rappelle 80 000 voitures pour réparer un problème de freins.',
+    'La nouvelle usine de Tesla {en} est retardée d\'un an.',
+    'Les ventes de Tesla baissent {en} : les voitures électriques chinoises sont moins chères.',
+    'Une enquête est ouverte après des accidents avec le pilote automatique de Tesla.',
+    'Le prix du lithium, un métal des batteries, double. Les voitures de Tesla coûtent plus cher à fabriquer.',
+    'Résultats décevants : Tesla gagne moins d\'argent par voiture qu\'avant.',
+    '{Pays} arrête son aide pour l\'achat de voitures électriques. Les commandes de Tesla ralentissent.']},
+  BA:{pos:[
+    'Boeing signe un énorme contrat : 60 nouveaux avions pour {pays}. Des milliards de dollars de ventes !',
+    'La compagnie aérienne {de} commande 40 avions Boeing 787.',
+    'Le nouvel avion de Boeing consomme 25 % moins de carburant. Les compagnies aériennes le veulent toutes.',
+    'Boeing livre ses avions plus vite que prévu ce trimestre.',
+    'Les voyages en avion atteignent un record mondial. Les compagnies ont besoin de plus d\'avions.',
+    'Boeing gagne un contrat pour construire une nouvelle fusée pour aller sur la Lune.',
+    'Au salon de l\'aviation de Paris, Boeing reçoit 150 commandes en 3 jours.',
+    'Les autorités autorisent enfin le nouvel avion de Boeing à transporter des passagers.',
+    'L\'armée {de} achète 30 hélicoptères Boeing.'],
+   neg:[
+    'Une grève dans les usines de Boeing arrête la production pendant deux semaines.',
+    'Boeing perd une grosse commande {de} : la compagnie choisit Airbus à la place.',
+    'Les autorités demandent plus de tests de sécurité avant de laisser voler le nouvel avion de Boeing.',
+    'Une porte s\'est détachée d\'un avion en plein vol. Personne n\'est blessé, mais une enquête commence.',
+    'Le prix de l\'aluminium et des pièces augmente. Boeing va gagner moins sur chaque avion.',
+    'Boeing annonce des milliards de dollars de pertes ce trimestre.']},
+  MCD:{pos:[
+    'McDonald\'s va ouvrir 300 restaurants {en} cette année.',
+    'Le nouveau menu de McDonald\'s {en} est un succès : les ventes ont grimpé de 20 %.',
+    'McDonald\'s lance la livraison par drone. Les clients adorent !',
+    'Résultats trimestriels : les ventes de McDonald\'s montent dans le monde entier.',
+    'Le menu à 5 $ de McDonald\'s attire des millions de nouveaux clients.',
+    'L\'application McDonald\'s atteint 200 millions d\'utilisateurs. Les clients commandent plus souvent.',
+    'McDonald\'s s\'associe à un film à succès : les jouets du Joyeux Festin sont en rupture de stock.',
+    'Le prix des pommes de terre baisse beaucoup. McDonald\'s va gagner plus sur chaque frite.',
+    'McDonald\'s augmente son dividende (l\'argent donné à ceux qui ont ses actions) pour la 48e année de suite.'],
+   neg:[
+    'Le prix du bœuf augmente beaucoup. McDonald\'s va gagner moins d\'argent sur chaque burger.',
+    'McDonald\'s ferme 100 restaurants {en} à cause des loyers trop chers.',
+    'Une intoxication alimentaire dans plusieurs restaurants McDonald\'s fait peur aux clients.',
+    'Les clients trouvent McDonald\'s trop cher : moins de monde dans les restaurants ce trimestre.',
+    '{Pays} met une nouvelle taxe sur la malbouffe. Les ventes de McDonald\'s vont baisser.']},
+  NKE:{pos:[
+    'La plus grande star de soccer {de} signe un contrat avec Nike !',
+    'Les nouvelles chaussures Nike sont en rupture de stock en 3 heures.',
+    'Nike devient l\'équipementier officiel de l\'équipe nationale {de}.',
+    'Nike ouvre un magasin géant {en}.',
+    'La Coupe du monde approche : les maillots Nike se vendent comme jamais.',
+    'Un athlète en Nike bat le record du monde du marathon. Tout le monde veut ses chaussures.',
+    'Les ventes en ligne de Nike augmentent de 30 % ce trimestre.',
+    'Nike lance une collaboration avec un rappeur célèbre. Les files d\'attente font le tour du bloc.'],
+   neg:[
+    'Les ventes de Nike baissent {en} : les jeunes préfèrent d\'autres marques.',
+    'Un problème dans les usines retarde les nouvelles collections de Nike.',
+    'Nike a trop de chaussures invendues. Elle doit faire de grosses soldes et gagne moins.',
+    '{Pays} augmente les taxes sur les vêtements importés. Les produits Nike coûtent plus cher.',
+    'Un grand athlète quitte Nike pour une marque concurrente.']},
+  NTDOY:{pos:[
+    'Le nouveau jeu Mario s\'est vendu à 10 millions de copies en un week-end !',
+    'Nintendo annonce un film Zelda. Les fans sont en folie.',
+    'La console de Nintendo est la plus vendue de l\'année {en}.',
+    'Nintendo va ouvrir un parc d\'attractions Super Nintendo World {en}.',
+    'Nintendo dévoile sa nouvelle console. Les précommandes battent tous les records.',
+    'Le film Mario dépasse 1 milliard de dollars au cinéma.',
+    'Le nouveau Pokémon devient le jeu le plus vendu de l\'histoire de Nintendo.',
+    'Nintendo lance ses jeux sur téléphone {en}. Des millions de téléchargements le premier jour.'],
+   neg:[
+    'Le grand jeu de Nintendo est repoussé d\'un an. Les joueurs sont déçus.',
+    'Des pirates informatiques attaquent le service en ligne de Nintendo pendant 2 jours.',
+    'La nouvelle console de Nintendo manque dans les magasins : pas assez de pièces pour la fabriquer.',
+    'Le nouveau jeu de Nintendo reçoit de mauvaises critiques.',
+    'Le yen, la monnaie du Japon, change de valeur : Nintendo gagne moins en vendant à l\'étranger.']},
+  AMZN:{pos:[
+    'Amazon va livrer en 1 heure partout {en}.',
+    'Amazon ouvre 10 nouveaux entrepôts de livraison {en}.',
+    'Le Black Friday d\'Amazon bat tous les records de ventes !',
+    'Le nuage informatique d\'Amazon (AWS) signe un contrat géant avec le gouvernement {de}.',
+    'Résultats trimestriels : les profits d\'Amazon sont 2 fois plus gros que prévu.',
+    'Amazon Prime gagne 20 millions d\'abonnés {en}.',
+    'Des entreprises d\'intelligence artificielle louent les ordinateurs d\'Amazon. Son service cloud grimpe.',
+    'Les satellites internet d\'Amazon commencent à fonctionner {en}.',
+    'Amazon utilise des robots dans ses entrepôts : les livraisons coûtent 20 % moins cher.'],
+   neg:[
+    'Une grève des livreurs ralentit Amazon {en}.',
+    '{Pays} veut obliger Amazon à payer plus d\'impôts.',
+    'Une panne du cloud d\'Amazon arrête des milliers de sites internet pendant des heures.',
+    'Les autorités accusent Amazon de ne pas laisser de place aux petits vendeurs. Un procès commence.',
+    'Les gens achètent moins en ligne ce trimestre. Les ventes d\'Amazon ralentissent.']},
+  DIS:{pos:[
+    'Le nouveau film Disney fait 1 milliard de dollars au cinéma en 2 semaines !',
+    'Disney va construire un nouveau parc {en}.',
+    'Disney+ gagne 15 millions d\'abonnés en un mois.',
+    'Le parc Disney {de} bat son record de visiteurs.',
+    'Disney annonce une suite de La Reine des neiges. Les fans sont aux anges.',
+    'La nouvelle série Marvel sur Disney+ est la plus regardée de l\'année.',
+    'Disney achète un grand studio de jeux vidéo. Les investisseurs aiment l\'idée.',
+    'Les croisières Disney sont complètes pour toute l\'année.'],
+   neg:[
+    'Le dernier film de Disney est un échec au cinéma.',
+    'Un ouragan oblige le parc Disney de Floride à fermer pendant une semaine.',
+    'Disney+ perd 4 millions d\'abonnés après une hausse de prix.',
+    'Les billets des parcs Disney sont trop chers : moins de visiteurs cet été.',
+    'Le patron de Disney démissionne soudainement. Les investisseurs sont inquiets.']},
 };
 const MARKET_NEWS = [
-  {pos:true,  syms:'ALL', text:'La banque centrale baisse les taux d\'intérêt. Presque toute la bourse monte !'},
-  {pos:true,  syms:'ALL', text:'Fin d\'une guerre commerciale entre {p} et {p2}. Les investisseurs sont contents.'},
-  {pos:true,  syms:['BA','DIS','MCD'], text:'Le tourisme explose en {p} : avions, parcs et restaurants sont pleins.'},
-  {pos:true,  syms:['AAPL','AMZN','NTDOY'], text:'{p} investit des milliards dans la technologie. Les actions tech montent.'},
-  {pos:true,  syms:['TSLA','BA'], text:'Le prix du pétrole chute. Bonne nouvelle pour Boeing et Tesla.'},
-  {pos:false, syms:'ALL', text:'Peur d\'une crise économique en {p}. La plupart des actions baissent.'},
-  {pos:false, syms:['AAPL','TSLA','NTDOY'], text:'Une pénurie mondiale de puces électroniques frappe les usines en {p}.'},
-  {pos:false, syms:['NKE','AMZN','MCD'], text:'Les familles de {p} dépensent moins : les magasins et restaurants vendent moins.'},
+  {pos:true,  syms:'ALL', text:'La banque centrale baisse les taux d\'intérêt. Emprunter coûte moins cher : presque toute la bourse monte !'},
+  {pos:true,  syms:'ALL', text:'Fin de la guerre commerciale entre {pays} et {pays2}. Les investisseurs sont soulagés.'},
+  {pos:true,  syms:'ALL', text:'Le chômage est au plus bas depuis 50 ans. Les gens ont du travail et dépensent plus.'},
+  {pos:true,  syms:'ALL', text:'L\'inflation (la hausse des prix) ralentit enfin. Bonne nouvelle pour presque toutes les entreprises.'},
+  {pos:true,  syms:['BA','DIS','MCD'], text:'Le tourisme explose {en} : avions, parcs et restaurants sont pleins.'},
+  {pos:true,  syms:['AAPL','AMZN','NTDOY'], text:'{Pays} investit 100 milliards de dollars dans la technologie. Les actions tech montent.'},
+  {pos:true,  syms:['TSLA','BA'], text:'Le prix du pétrole chute. Bonne nouvelle pour Boeing (moins cher de faire voler les avions) et Tesla.'},
+  {pos:true,  syms:['NKE','MCD','DIS','AMZN'], text:'Les fêtes de fin d\'année battent des records de dépenses {en}.'},
+  {pos:true,  syms:['AAPL','AMZN','TSLA'], text:'La folie de l\'intelligence artificielle : les investisseurs achètent les grandes entreprises tech.'},
+  {pos:true,  syms:['NKE','MCD','BA'], text:'Les Jeux olympiques auront lieu {en}. Sport, voyages et restaurants vont en profiter.'},
+  {pos:false, syms:'ALL', text:'Peur d\'une récession (une crise économique) {en}. La plupart des actions baissent.'},
+  {pos:false, syms:'ALL', text:'La banque centrale monte les taux d\'intérêt pour combattre l\'inflation. La bourse recule.'},
+  {pos:false, syms:'ALL', text:'Krach éclair : en quelques minutes, des robots de trading vendent tout. Presque toutes les actions chutent.'},
+  {pos:false, syms:['AAPL','TSLA','NTDOY'], text:'Une pénurie mondiale de puces électroniques frappe les usines {de}.'},
+  {pos:false, syms:['NKE','AMZN','MCD'], text:'Les familles {de} dépensent moins : les magasins et restaurants vendent moins.'},
+  {pos:false, syms:['BA','DIS','MCD'], text:'Une nouvelle épidémie {en} fait peur aux voyageurs. Avions, parcs et restaurants se vident.'},
+  {pos:false, syms:['AAPL','NKE','TSLA'], text:'{Pays} et {pays2} se disputent et augmentent leurs taxes à l\'importation. Les produits fabriqués à l\'étranger coûtent plus cher.'},
+  {pos:false, syms:['TSLA','BA'], text:'Un gros navire bloque le canal de Suez pendant une semaine. Les pièces des usines arrivent en retard.'},
 ];
 
 /* ---------- outils ---------- */
@@ -349,7 +495,7 @@ const ssSet = (k,v) => { try { v == null ? sessionStorage.removeItem(k) : sessio
 let V = blankView();
 let teams = [];      // prof : équipes complètes (avec code) ; joueurs : version publique
 function blankView(){
-  return {status:'attente', t:0, nextNews:150, speed:1, news:[], manche:1, roundStart:0, results:[],
+  return {status:'attente', t:0, nextNews:70, speed:1, news:[], manche:1, roundStart:0, results:[],
     stocks: DEFS.map(d => ({sym:d.sym, price:d.price, open:d.price, hist:[d.price]}))};
 }
 function serialize(nh){
@@ -375,8 +521,8 @@ const teamWho = t => `${t.size||1} joueur${(t.size||1)>1?'s':''}`;
 const roundLeft = () => Math.max(0, ROUND - (V.t - V.roundStart));
 const STATUS_TXT = {attente:'Inscriptions', en_cours:'Marché ouvert', pause:'Pause', fin_manche:'Fin de manche', fini:'Partie terminée'};
 const newsSyms = n => n.syms || [n.sym];
-const newsTag = n => n.sym === 'MARCHÉ' ? (n.pos ? 'Tout le marché monte' : 'Le marché baisse') : `${n.sym} va ${n.pos ? 'monter' : 'baisser'}`;
-const newsSub = n => n.sym === 'MARCHÉ' ? 'Touche : ' + newsSyms(n).join(', ') : `${def(n.sym).name} · ${def(n.sym).sector}`;
+const newsTag = n => n.sym === 'MARCHÉ' ? (n.pos ? 'Plusieurs actions vont monter' : 'Plusieurs actions vont baisser') : `${def(n.sym).name} (${n.sym}) va ${n.pos ? 'monter' : 'baisser'}`;
+const newsSub = n => n.sym === 'MARCHÉ' ? 'Actions touchées : ' + newsSyms(n).map(s => def(s).name).join(', ') : `${def(n.sym).name} · ${def(n.sym).sector}`;
 const newsKey = n => n ? n.t + n.sym : null;
 const indexVal = () => V.stocks.reduce((a,s) => a + s.price/s.open, 0) / V.stocks.length * 1000;
 
@@ -467,29 +613,36 @@ function endRound(){
   V.status = V.manche >= MANCHES ? 'fini' : 'fin_manche';
   hostSave(); broadcast();
 }
-const recentPays = [], recentTexts = [];
+// Les annonces déjà utilisées sont gardées d'une partie à l'autre : pas les mêmes à chaque nouvelle partie.
+const recentPays = [];
+let usedTexts = []; try { usedTexts = JSON.parse(localStorage.getItem('bdlc-news-used') || '[]'); } catch(e){}
 function pickPays(){
-  const pool = PAYS.filter(p => !recentPays.includes(p));
+  const pool = PAYS.filter(p => !recentPays.includes(p[0]));
   const p = pool[Math.floor(Math.random()*pool.length)];
-  recentPays.push(p); if (recentPays.length > 12) recentPays.shift();
+  recentPays.push(p[0]); if (recentPays.length > 15) recentPays.shift();
   return p;
 }
 function pickText(list){
-  const pool = list.filter(t => !recentTexts.includes(t)), src = pool.length ? pool : list;
+  const pool = list.filter(t => !usedTexts.includes(t)), src = pool.length ? pool : list;
   const t = src[Math.floor(Math.random()*src.length)];
-  recentTexts.push(t); if (recentTexts.length > 20) recentTexts.shift();
+  usedTexts = usedTexts.filter(x => x !== t).concat([t]).slice(-150);
+  try { localStorage.setItem('bdlc-news-used', JSON.stringify(usedTexts)); } catch(e){}
   return t;
 }
-const fillPays = t => t.replace('{p}', pickPays()).replace('{p2}', pickPays());
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+function fillPays(t){
+  const a = pickPays(), b = pickPays();
+  return t.replace(/\{en\}/g, a[1]).replace(/\{de\}/g, a[2]).replace(/\{Pays\}/g, cap(a[0])).replace(/\{pays\}/g, a[0]).replace(/\{pays2\}/g, b[0]);
+}
 // le prix bouge petit à petit pendant 40 secondes : les équipes ont le temps de réagir
 const boost = (sym, impact) => { boosts[sym] = {n:40, per:Math.pow(1+impact, 1/40) - 1}; };
 function makeNews(){
   let item;
-  if (Math.random() < 0.18){
-    const m = MARKET_NEWS[Math.floor(Math.random()*MARKET_NEWS.length)];
+  if (Math.random() < 0.22){
+    const mt = pickText(MARKET_NEWS.map(x => x.text)), m = MARKET_NEWS.find(x => x.text === mt);
     const syms = m.syms === 'ALL' ? DEFS.map(d => d.sym) : m.syms;
     for (const s of syms) boost(s, m.pos ? rand(.04,.10) : -rand(.04,.08));
-    item = {t:V.t, sym:'MARCHÉ', syms, text:fillPays(pickText([m.text])), pos:m.pos};
+    item = {t:V.t, sym:'MARCHÉ', syms, text:fillPays(m.text), pos:m.pos};
     lastNewsSym = null;
   } else {
     const pool = DEFS.filter(d => d.sym !== lastNewsSym);
@@ -501,7 +654,7 @@ function makeNews(){
     item = {t:V.t, sym:d.sym, syms:[d.sym], text, pos:positive};
   }
   V.news.unshift(item); V.news = V.news.slice(0, 30);
-  V.nextNews = Math.round(rand(120,180));
+  V.nextNews = Math.round(rand(90,150));
   hostSave(); broadcast();
 }
 
@@ -978,7 +1131,7 @@ function renderTeam(body, tm){
           <div class="stat"><div class="k">Argent</div><div class="v num" id="pCash"></div></div>
           <div class="stat"><div class="k">Valeur totale</div><div class="v num" id="pVal"></div></div>
           <div class="stat"><div class="k">Gain</div><div class="v num" id="pGain"></div></div>
-          <div class="stat"><div class="k">Classement</div><div class="v num" id="pRank"></div></div>
+          <div class="stat"><div class="k">Actions achetées</div><div class="v num" id="pShares"></div></div>
         </div>
         <div class="hold" id="pHold"></div>
       </section>
@@ -988,7 +1141,8 @@ function renderTeam(body, tm){
         <div class="slist">${DEFS.map(d => `
           <div class="srow" data-sym="${d.sym}">
             <div><div class="row"><span class="sym">${d.sym}</span><span class="num px"></span></div>
-              <div class="row"><span class="sec">${esc(d.name)}</span><span class="num ch"></span></div></div>
+              <div class="row"><span class="sec">${esc(d.name)}</span><span class="num ch"></span></div>
+              <div class="own num"></div></div>
             <canvas></canvas>
             <div class="act"><input type="number" min="1" value="50" id="q-${d.sym}" aria-label="Quantité de ${d.sym}">
               <button type="button" class="buy" data-buy="${d.sym}">Acheter</button>
@@ -1009,20 +1163,19 @@ function renderTeam(body, tm){
   else if (st === 'fin_manche' || st === 'fini'){
     const r = V.results.find(x => x.manche === V.manche), top = r ? r.top : [];
     ban.className = 'banner wait'; $('pTag').textContent = st === 'fini' ? 'Partie terminée' : `Fin de la manche ${V.manche}`;
-    $('pTxt').textContent = (top.length ? `En tête : ${top[0].name} (${money0(top[0].v)}). ` : '') + (st === 'fini' ? 'Bravo à tous !' : 'Vous gardez votre argent et vos actions pour la manche suivante.');
+    $('pTxt').textContent = (st === 'fini' ? 'Bravo à tous !' : 'Vous gardez votre argent et vos actions pour la manche suivante.');
   }
   else if (n){ ban.className = 'banner' + (n.pos ? '' : ' neg'); $('pTag').textContent = newsTag(n) + ` · prochaine annonce dans ${mmss(Math.max(0,V.nextNews))}`; $('pTxt').textContent = n.text; }
   else { ban.className = 'banner'; $('pTag').textContent = `Prochaine annonce dans ${mmss(Math.max(0,V.nextNews))}`; $('pTxt').textContent = 'Le marché est ouvert. Regardez bien les annonces !'; }
   if (n && newsKey(n) !== plLastNews){ const first = plLastNews === null; plLastNews = newsKey(n); if (!first) document.querySelectorAll('.srow').forEach(r => r.classList.toggle('hot', newsSyms(n).includes(r.dataset.sym))); }
 
   const val = teamValue(tm), g = (val/START_CASH-1)*100;
-  const rank = teams.map(t => teamValue(t)).sort((a,b) => b-a).indexOf(val) + 1;
   $('pTeamName').textContent = `${tm.name} · ${teamWho(tm)}`;
   $('pCode').innerHTML = `Code de l'équipe : <b class="num">${esc(myTeam.code)}</b> <span class="muted">— vos coéquipiers l'entrent pour jouer sur leur propre appareil.</span>`;
   $('pCash').textContent = money(tm.cash);
   $('pVal').textContent = money0(val);
   $('pGain').textContent = pct(g); $('pGain').className = 'v num ' + (g>=0?'up':'down');
-  $('pRank').textContent = `${rank} / ${teams.length}`;
+  $('pShares').textContent = Object.values(tm.hold||{}).reduce((a,q) => a + (q>0?q:0), 0);
   const items = Object.entries(tm.hold||{}).filter(([,q]) => q > 0).map(([k,q]) => `<span><b>${esc(k)}</b> × ${q} · ${money0(q*priceOf(k))}</span>`).join('');
   $('pHold').innerHTML = items || '<span class="muted" style="border:0;background:none;padding:0">Aucune action pour l\'instant.</span>';
   const pm = $('pMsg'); pm.innerHTML = plMsg ? `<span class="${plMsgOk?'up':'down'}">${esc(plMsg)}</span>` : (open ? '' : '<span class="muted">Les achats et ventes ouvrent quand le prof clique sur Commencer.</span>');
@@ -1035,6 +1188,8 @@ function renderTeam(body, tm){
     const ch = (s.price/s.open-1)*100;
     row.querySelector('.px').textContent = s.price.toFixed(2) + ' $';
     const c = row.querySelector('.ch'); c.textContent = pct(ch); c.className = 'num ch ' + (ch>=0?'up':'down');
+    const own = (tm.hold||{})[s.sym] || 0, oe = row.querySelector('.own');
+    oe.textContent = own > 0 ? `Tu as ${own} action${own>1?'s':''} · ${money0(own*s.price)}` : 'Tu n\'as aucune action'; oe.classList.toggle('has', own > 0);
     drawSpark(row.querySelector('canvas'), s, 80);
     row.querySelectorAll('button').forEach(b => b.disabled = !open || busy);
   }
